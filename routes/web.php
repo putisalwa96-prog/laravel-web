@@ -22,7 +22,9 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
 
 Route::resource('pelanggan', PelangganController::class);
 
-Route::get('/', fn() => redirect()->route('biodata.index'));
+Route::get('/', function () {
+    return view('welcome');
+});
 Route::resource('biodata', BiodataController::class)->parameters([
     'biodata' => 'biodata',
 ]);
