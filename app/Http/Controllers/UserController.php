@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -29,17 +30,20 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //dd($request->all());
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
         $data['name'] = $request->name;
-        $data['email']  = $request->email;
-        $data['password']   = Hash::make($request->password);
-        $data['confirm_password'] = $request->password_confirmation;
+        $data['email'] = $request->email;
+        $data['password'] = Hash::make($request->password);
 
         User::create($data);
 
         return redirect()->route('user.index')->with('success', 'Penambahan Data Berhasil!');
     }
-
     /**
      * Display the specified resource.
      */
@@ -62,16 +66,22 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user_id = $id;
-        $user    = User::findOrFail($user_id);
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:8|confirmed',
+        ]);
 
         $user->name = $request->name;
-        $user->email  = $request->email;
-        $user->password   = $request->password;
+        $user->email = $request->email;
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
 
         $user->save();
         return redirect()->route('user.index')->with('success', 'Perubahan Data Berhasil!');
-
     }
 
     /**
